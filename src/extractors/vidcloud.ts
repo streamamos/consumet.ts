@@ -35,11 +35,13 @@ class VidCloud extends VideoExtractor {
         options
       );
 
-      if (!isJson(res.data.sources)) {
+      if (!isJson(res.data.sources) && !res.data.sources[0].file.endsWith("playlist.m3u8")) {
         let keys = await (await this.client.get('https://keys4.fun')).data["rabbitstream"]["keys"];
         let keyString = btoa(String.fromCharCode.apply(null, Array.from(new Uint8Array(keys))));
         console.log(CryptoJS.AES.decrypt(res.data.sources, keyString).toString(CryptoJS.enc.Utf8));
         sources = JSON.parse(CryptoJS.AES.decrypt(res.data.sources, keyString).toString(CryptoJS.enc.Utf8))
+      } else {
+        sources = res.data.sources;
       }
 
       this.sources = sources.map((s: any) => ({
