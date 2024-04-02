@@ -30,11 +30,12 @@ class VidCloud extends VideoExtractor {
       let res = undefined;
       let sources = undefined;
 
-      res = await this.client.get(
+      /* 
+     res = await this.client.get(
         `${isAlternative ? this.host2 : this.host}/ajax/embed-4/getSources?id=${id}`,
         options
       );
-
+ 
       if (!isJson(res.data.sources) && !res.data.sources[0].file.endsWith("playlist.m3u8")) {
         let keys = await (await this.client.get('https://keys4.fun')).data["rabbitstream"]["keys"];
         let keyString = btoa(String.fromCharCode.apply(null, Array.from(new Uint8Array(keys))));
@@ -43,6 +44,58 @@ class VidCloud extends VideoExtractor {
       } else {
         sources = res.data.sources;
       }
+ 
+      this.sources = sources.map((s: any) => ({
+        url: s.file,
+        isM3U8: s.file.includes('.m3u8'),
+      }));
+ 
+      result.sources.push(...this.sources);
+ 
+      result.sources = [];
+      this.sources = [];
+ 
+      for (const source of sources) {
+        const { data } = await this.client.get(source.file, options);
+        const urls = data.split('\n').filter((line: string) => line.includes('.m3u8')) as string[];
+        const qualities = data.split('\n').filter((line: string) => line.includes('RESOLUTION=')) as string[];
+ 
+        const TdArray = qualities.map((s, i) => {
+          const f1 = s.split('x')[1];
+          const f2 = urls[i];
+ 
+          return [f1, f2];
+        });
+ 
+        for (const [f1, f2] of TdArray) {
+          this.sources.push({
+            url: f2,
+            quality: f1,
+            isM3U8: f2.includes('.m3u8'),
+          });
+        }
+        result.sources.push(...this.sources);
+      }
+ 
+      result.sources.push({
+        url: sources[0].file,
+        isM3U8: sources[0].file.includes('.m3u8'),
+        quality: 'auto',
+      });
+ 
+      result.subtitles = res.data.tracks.map((s: any) => ({
+        url: s.file,
+        lang: s.label ? s.label : 'Default (maybe)',
+      }));
+ 
+      return result; */
+
+
+      res = await this.client.get(`https://api.fffapifree.cam/get-source?id=${id}`);
+
+      sources = JSON.parse(res.data.data.sources);
+      console.log(sources);
+
 
       this.sources = sources.map((s: any) => ({
         url: s.file,
@@ -82,12 +135,13 @@ class VidCloud extends VideoExtractor {
         quality: 'auto',
       });
 
-      result.subtitles = res.data.tracks.map((s: any) => ({
+      result.subtitles = res.data.data.tracks.map((s: any) => ({
         url: s.file,
         lang: s.label ? s.label : 'Default (maybe)',
       }));
 
       return result;
+
     } catch (err) {
       throw err;
     }
