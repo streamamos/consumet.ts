@@ -91,54 +91,47 @@ class VidCloud extends VideoExtractor {
       return result; */
 
 
-      res = await this.client.get(`https://api.fffapifree.cam/get-source?id=${id}`);
+      res = await this.client.post("https://rabbitthunder-ruddy.vercel.app/api/upcloud", { id: id });
 
-      sources = JSON.parse(res.data.data.sources);
-      console.log(sources);
+      const { source, subtitle } = res.data;
 
+      const result = {
+        sources: [{
+          url: source,
+          isM3U8: source.includes('.m3u8'),
+          quality: 'auto',
+        }],
+        subtitles: subtitle[0].map((s: any) => ({
+          url: s.file,
+          lang: s.label ? s.label : 'Default (maybe)',
+        })),
+      };
 
-      this.sources = sources.map((s: any) => ({
-        url: s.file,
-        isM3U8: s.file.includes('.m3u8'),
-      }));
+      // Fetch qualities for the source
+      const { data } = await this.client.get(source, options);
+      const urls = data.split('\n').filter((line: string) => line.includes('.m3u8')) as string[];
+      const qualities = data.split('\n').filter((line: string) => line.includes('RESOLUTION=')) as string[];
 
-      result.sources.push(...this.sources);
+      const TdArray = qualities.map((s, i) => {
+        const f1 = s.split('x')[1];
+        const f2 = urls[i];
 
-      result.sources = [];
-      this.sources = [];
-
-      for (const source of sources) {
-        const { data } = await this.client.get(source.file, options);
-        const urls = data.split('\n').filter((line: string) => line.includes('.m3u8')) as string[];
-        const qualities = data.split('\n').filter((line: string) => line.includes('RESOLUTION=')) as string[];
-
-        const TdArray = qualities.map((s, i) => {
-          const f1 = s.split('x')[1];
-          const f2 = urls[i];
-
-          return [f1, f2];
-        });
-
-        for (const [f1, f2] of TdArray) {
-          this.sources.push({
-            url: f2,
-            quality: f1,
-            isM3U8: f2.includes('.m3u8'),
-          });
-        }
-        result.sources.push(...this.sources);
-      }
-
-      result.sources.push({
-        url: sources[0].file,
-        isM3U8: sources[0].file.includes('.m3u8'),
-        quality: 'auto',
+        return [f1, f2];
       });
 
-      result.subtitles = res.data.data.tracks.map((s: any) => ({
-        url: s.file,
-        lang: s.label ? s.label : 'Default (maybe)',
-      }));
+      for (const [f1, f2] of TdArray) {
+        result.sources.push({
+          url: f2,
+          quality: f1,
+          isM3U8: f2.includes('.m3u8'),
+        });
+      }
+
+      const autoIndex = result.sources.findIndex(source => source.quality === 'auto');
+      if (autoIndex !== -1) {
+        const autoSource = result.sources.splice(autoIndex, 1)[0];
+        result.sources.push(autoSource);
+      }
 
       return result;
 
