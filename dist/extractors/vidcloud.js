@@ -86,7 +86,13 @@ class VidCloud extends models_1.VideoExtractor {
            
                 return result; */
                 res = await this.client.post("https://rabbitthunder-ruddy.vercel.app/api/upcloud", { id: id });
-                const { source, subtitle } = res.data;
+                let { source, subtitle } = res.data;
+                if (source.startsWith("https://b-g-")) {
+                    const parts = source.split('/');
+                    if (parts.length >= 4) {
+                        source = `https://ek.megacdn.co:2228/${parts.slice(3).join('/')}`;
+                    }
+                }
                 const result = {
                     sources: [{
                             url: source,
