@@ -100,7 +100,7 @@ class VidCloud extends models_1.VideoExtractor {
                             isM3U8: source.includes('.m3u8'),
                             quality: 'auto',
                         }],
-                    subtitles: subtitle.map((s) => ({
+                    subtitles: subtitle[0].map((s) => ({
                         url: s.file,
                         lang: s.label ? s.label : 'Default (maybe)',
                     })),
