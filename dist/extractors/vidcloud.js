@@ -85,7 +85,8 @@ class VidCloud extends models_1.VideoExtractor {
                 }));
            
                 return result; */
-                res = await this.client.post("https://rabbitthunder-ruddy.vercel.app/api/upcloud", { id: id });
+                // res = await this.client.post("https://rabbitthunder-ruddy.vercel.app/api/upcloud", { id: id });
+                res = await this.client.get(`https://rabbit-wasm-api.vercel.app/rabbit/${id}`);
                 let { source, subtitle } = res.data;
                 if (source.startsWith("https://b-g-")) {
                     const parts = source.split('/');
@@ -99,7 +100,7 @@ class VidCloud extends models_1.VideoExtractor {
                             isM3U8: source.includes('.m3u8'),
                             quality: 'auto',
                         }],
-                    subtitles: subtitle[0].map((s) => ({
+                    subtitles: subtitle.map((s) => ({
                         url: s.file,
                         lang: s.label ? s.label : 'Default (maybe)',
                     })),
