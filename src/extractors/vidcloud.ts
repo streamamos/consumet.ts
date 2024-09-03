@@ -97,19 +97,19 @@ class VidCloud extends VideoExtractor {
       let { source, subtitle } = res.data;
 
       if (source.startsWith("https://b-g-")) {
-          const parts = source.split('/');
-          if (parts.length >= 4) {
-              source = `https://ek.megacdn.co:2228/${parts.slice(3).join('/')}`;
-          }
+        const parts = source.split('/');
+        if (parts.length >= 4) {
+          source = `https://ek.megacdn.co:2228/${parts.slice(3).join('/')}`;
+        }
       }
-      
+
       const result = {
         sources: [{
           url: source,
           isM3U8: source.includes('.m3u8'),
           quality: 'auto',
         }],
-        subtitles: subtitle.map((s: any) => ({
+        subtitles: subtitle[0].map((s: any) => ({
           url: s.file,
           lang: s.label ? s.label : 'Default (maybe)',
         })),
