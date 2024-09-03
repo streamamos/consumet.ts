@@ -91,7 +91,8 @@ class VidCloud extends VideoExtractor {
       return result; */
 
 
-      res = await this.client.post("https://rabbitthunder-ruddy.vercel.app/api/upcloud", { id: id });
+      // res = await this.client.post("https://rabbitthunder-ruddy.vercel.app/api/upcloud", { id: id });
+      res = await this.client.get(`https://rabbit-wasm-api.vercel.app/rabbit/${id}`);
 
       let { source, subtitle } = res.data;
 
@@ -108,7 +109,7 @@ class VidCloud extends VideoExtractor {
           isM3U8: source.includes('.m3u8'),
           quality: 'auto',
         }],
-        subtitles: subtitle[0].map((s: any) => ({
+        subtitles: subtitle.map((s: any) => ({
           url: s.file,
           lang: s.label ? s.label : 'Default (maybe)',
         })),
